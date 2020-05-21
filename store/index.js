@@ -10,7 +10,7 @@ const createStore = () => {
             work_area: null,
             friends: null,
             teachers: null,
-            storage: "http://localhost:4000",
+            storage: "http://heba-storage.herokuapp.com",
             works: null,
             suggestUsers: null
         },
