@@ -97,8 +97,14 @@ export default {
     workImageChanged(e) {
       console.log(e.target.files);
       if (e.target.files != undefined) {
-        this.workImageName = e.target.files[0].name;
-        this.workImageSize = e.target.files[0].size / 100;
+        if (e.target.files[0] != undefined) {
+          this.workImageName = e.target.files[0].name;
+          this.workImageSize = e.target.files[0].size / 100;
+        } else {
+          this.workImageName = null;
+        }
+      } else {
+        this.workImageName = null;
       }
     }
   },

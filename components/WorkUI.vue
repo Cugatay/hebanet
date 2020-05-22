@@ -1,7 +1,7 @@
 <template>
   <div
     ref="workUI"
-    style="opacity: 0;transition: opacity 0.4s"
+    style="opacity: 0;transition: opacity 0.35s"
     class="w-full h-full"
   >
     <div @click="closeUI" class="workUiBG w-full h-full" />
@@ -10,7 +10,7 @@
       <div class=" w-4/6 block p-6 pt-4">
         <div class="header flex items-center">
           <p class="text-3xl w-10/12">
-            Çocuklar Bu Önemli
+            {{ $store.state.workUIDetails.title }}
           </p>
           <button
             class="button select-none bg-blue-500 hover:bg-blue-600 transition-colors duration-300 text-white font-bold py-1 px-2 rounded-full"
@@ -19,6 +19,9 @@
             Yapmaya Başla
           </button>
         </div>
+        <p class="text-lg">
+          {{ $store.state.workUIDetails.title }}
+        </p>
       </div>
       <div class="w-2/6 border-solid border-l-2 border-gray-200 block">
         <div
@@ -38,17 +41,22 @@
                   <span
                     class="group-hover:table-cell text-white font-bold align-middle text-xl"
                   >
-                    Ca
+                    {{
+                      JSON.parse($store.state.workUIDetails.owner).name[0] +
+                        JSON.parse($store.state.workUIDetails.owner).name[1]
+                    }}
                   </span>
                 </div>
               </div>
               <div class="name ml-1">
-                <p class="text-xl">Çağatay Kaydır</p>
+                <p class="text-xl">
+                  {{ JSON.parse($store.state.workUIDetails.owner).name }}
+                </p>
                 <p
                   class="text-gray-600 font-sm -ml-1"
                   style="margin-top:-0.3rem"
                 >
-                  @cagatayxx
+                  @{{ JSON.parse($store.state.workUIDetails.owner).username }}
                 </p>
               </div>
             </div>
@@ -56,15 +64,32 @@
           </div>
 
           <div class="comments mt-14">
-            <p class="text-center text-gray-600 mt-2" v-if="false">
-              Henüz Yorum Yapılmamış
+            <p
+              class="text-center text-gray-600 mt-2"
+              v-if="
+                (comments == undefined || comments == '') &&
+                  (newComments == undefined || newComments == '')
+              "
+            >
+              Henüz Yorum Yapılmadı
             </p>
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
+            <div v-else>
+              <Comment
+                v-for="comment in comments"
+                :key="comment.username + comment.comment"
+                :comment="comment.comment"
+                :name="comment.name"
+                :username="comment.username"
+              />
+
+              <Comment
+                v-for="comment in newComments"
+                :key="comment.username + comment.comment"
+                :comment="comment.comment"
+                :name="comment.name"
+                :username="comment.username"
+              />
+            </div>
           </div>
         </div>
 
@@ -72,11 +97,7 @@
           <div class="send__group field flex">
             <input
               autocomplete="off"
-              @keypress.enter="
-                '';
-
-
-              "
+              @keypress.enter="sendComment"
               v-model="sendStr"
               type="input"
               class="send__field -mr-6 select-none"
@@ -88,11 +109,7 @@
             <label for="send" class="send__label">Yorum Yazın</label>
 
             <div
-              @click="
-                '';
-
-
-              "
+              @click="sendComment"
               id="searchIc"
               style="transition: opacity 0.2s;margin-top:0.3rem"
             >
@@ -118,7 +135,13 @@ export default {
   },
   data() {
     return {
-      sendStr: null
+      sendStr: null,
+      comments:
+        this.$store.state.workUIDetails.comments == null ||
+        this.$store.state.workUIDetails.comments == ""
+          ? null
+          : JSON.parse(`[${this.$store.state.workUIDetails.comments}]`),
+      newComments: []
     };
   },
   methods: {
@@ -126,10 +149,37 @@ export default {
       this.$refs.workUI.style.opacity = "0";
       setTimeout(() => {
         this.$store.commit("closeWorkUI");
-      }, 400);
+      }, 350);
+    },
+
+    sendComment() {
+      this.newComments.push({
+        comment: this.sendStr,
+        name: this.$store.state.name,
+        username: this.$store.state.username,
+        workArea: this.$store.state.work_area
+      });
+      this.$axios
+        .post("/api/comment", {
+          token: this.$store.state.token,
+          workId: this.$store.state.workUIDetails.id,
+          commentary: this.sendStr
+        })
+        .then(result => {
+          console.log(result.data);
+        });
+
+      this.sendStr = "";
     }
   },
   mounted() {
+    console.log("-------------------------");
+    console.log(this.$store.state.workUIDetails.comments);
+    console.log(
+      document.getElementById(this.$store.state.workUIDetails.id)
+      // .getElementsByClassName("comments")
+    );
+    console.log("-------------------------");
     setTimeout(() => {
       this.$refs.workUI.style.opacity = "1";
     }, 10);
