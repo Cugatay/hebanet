@@ -33,9 +33,9 @@
         </div>
 
         <div class="posts md:w-2/3 w-11/12 mx-auto mt-5">
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="true" />
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="false" />
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="false" />
+          <!-- <Work class="mt-4" :where="'normal'" :done="true" />
+          <Work class="mt-4" :where="'normal'" :done="false" />
+          <Work class="mt-4" :where="'normal'" :done="false" /> -->
         </div>
 
 </div>

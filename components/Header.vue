@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="show"
     class="w-full h-13 fixed top-0 bg-white shadow-header flex justify-between items-center"
   >
     <div class="left">
@@ -8,80 +9,97 @@
       </nuxt-link>
     </div>
     <div class="center focus:bg-blue-500 -mt-5 w-1/3">
-      <div
-        v-if="
-          searchDropdown == true
-        "
-        class="fixed top-0 w-1/3"
-        style=""
-      >
+      <div v-if="searchDropdown == true" class="fixed top-0 w-1/3" style="">
         <div
           id="searchDropdownDiv"
           class="w-64 bg-white shadow-header mx-auto mt-12 h-64 overflow-y-auto overflow-x-hidden rounded-md"
         >
-          <div
-            class="students mb-2 mt-1"
-            v-if="students.length != 0"
-          >
+          <div class="students mb-2 mt-1" v-if="students.length != 0">
             <div class="searchRes text-xl text-center">Öğrenciler</div>
-            <nuxt-link class="searchRes" v-for="result in students" :key="result.username" :to="'/user/' + result.username">
-            <div
-              class="w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
-              style="padding-top:0.5rem;padding-bottom:0.5rem"
+            <nuxt-link
+              class="searchRes"
+              v-for="result in students"
+              :key="result.username"
+              :to="'/user/' + result.username"
             >
-              <img
-                src="https://cdn.vuetifyjs.com/images/john.jpg"
-                style="width:2.8rem; height:2.8rem"
-                class="rounded-full cursor-pointer"
-              />
-              <div class="block ml-1">
-                <p class="text-lg -mb-2 truncate w-48">{{ result.name }}</p>
-                <p class=" text-gray-500 text-sm -mt-2 -ml-1 w-36 truncate">
-                  @{{ result.username }}
-                </p>
+              <div
+                class="w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
+                style="padding-top:0.5rem;padding-bottom:0.5rem"
+              >
+                <div>
+                  <div
+                    style="background: rgb(202, 202, 202); padding-top:0.4rem; padding-bottom: 0.4rem;width:2.8rem"
+                    class="group w-full h-full rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
+                  >
+                    <span
+                      class="group-hover:table-cell text-white font-bold align-middle text-xl"
+                    >
+                      {{ result.name[0] + result.name[1] }}
+                    </span>
+                  </div>
+                </div>
+                <div class="block ml-1">
+                  <p class="text-lg -mb-2 truncate w-48">{{ result.name }}</p>
+                  <p class=" text-gray-500 text-sm -mt-2 -ml-1 w-36 truncate">
+                    @{{ result.username }}
+                  </p>
+                </div>
               </div>
-            </div>
+            </nuxt-link>
+          </div>
+
+          <div class="teachers mt-1" v-if="teachers.length != 0">
+            <div class="text-xl text-center">Öğretmenler</div>
+            <nuxt-link
+              class="teacherRes"
+              v-for="result in teachers"
+              :key="result.username"
+              :to="'/user/' + result.username"
+            >
+              <div
+                class="searchRes w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
+                style="padding-top:0.5rem;padding-bottom:0.5rem"
+              >
+                <div>
+                  <div
+                    style="background: rgb(202, 202, 202); padding-top:0.4rem; padding-bottom: 0.4rem;width:2.8rem"
+                    class="group w-full h-full rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
+                  >
+                    <span
+                      class="group-hover:table-cell text-white font-bold align-middle text-xl"
+                    >
+                      {{ result.name[0] + result.name[1] }}
+                    </span>
+                  </div>
+                </div>
+                <div class="block ml-1">
+                  <p class="text-lg -mb-2 truncate w-48">{{ result.name }}</p>
+                  <p class=" text-gray-500 text-sm -mt-2 -ml-1 w-36 truncate">
+                    @{{ result.username }}
+                  </p>
+                </div>
+              </div>
             </nuxt-link>
           </div>
 
           <div
-            class="teachers mt-1"
-            v-if="teachers.length != 0"
+            v-if="students.length == 0 && teachers.length == 0"
+            class="not_found text-center mt-2 text-gray-500"
           >
-            <div class="text-xl text-center">Öğretmenler</div>
-            <nuxt-link class="teacherRes" v-for="result in teachers" :key="result.username" :to="'/user/' + result.username">
-            <div
-              class="searchRes w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
-              style="padding-top:0.5rem;padding-bottom:0.5rem"
-            >
-              <img
-                src="https://cdn.vuetifyjs.com/images/john.jpg"
-                style="width:2.8rem; height:2.8rem"
-                class="rounded-full cursor-pointer"
-              />
-              <div class="block ml-1">
-                <p class="text-lg -mb-2 truncate w-48">{{ result.name }}</p>
-                <p class=" text-gray-500 text-sm -mt-2 -ml-1 w-36 truncate">
-                  @{{ result.username }}
-                </p>
-              </div>
-            </div>
-            </nuxt-link>
-          </div>
-
-          <div v-if="students.length == 0 && teachers.length == 0" class="not_found text-center mt-2 text-gray-500">
             Sonuç bulunamadı. Özel karakterleri büyük/küçük yazmayı deneyin
           </div>
 
-            <div
+          <div
             v-else
-              class="w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 bg-gray-100 hover:bg-gray-200"
-            > 
+            class="w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 bg-gray-100 hover:bg-gray-200"
+          >
             <nuxt-link :to="'/search/' + searchStr">
-              <p class="text-xl text-gray-600 px-1"><span class="font-bold">#{{searchStr}}</span> için daha fazlası</p>
+              <p class="text-xl text-gray-600 px-1">
+                <span class="font-bold">#{{ searchStr }}</span> için daha
+                fazlası
+              </p>
             </nuxt-link>
-            </div>
-
+          </div>
         </div>
       </div>
 
@@ -104,48 +122,70 @@
           id="searchIc"
           style="transition: opacity 0.2s;"
         >
-            <img src="/icons/search.svg" style="width:1.4rem" class="searchbtn cursor-pointer">
+          <img
+            src="/icons/search.svg"
+            style="width:1.4rem"
+            class="searchbtn cursor-pointer"
+          />
         </div>
       </div>
     </div>
     <div class="right flex">
-            <img 
-            id="addDropdown"
-            @click="
+      <img
+        id="addDropdown"
+        @click="
           addDropdown == true
             ? setDropdown('close', 'add')
             : setDropdown('open', 'add')
         "
-             src="/icons/plus-circle.svg" class="cursor-pointer" style="width:1.8rem;color:#8f8f8f; transition: color 0.3s;">
+        src="/icons/plus-circle.svg"
+        class="cursor-pointer"
+        style="width:1.8rem;color:#8f8f8f; transition: color 0.3s;"
+      />
       <div class="pr-2 w-14 h-12 ml-3">
-        <img
+        <div
           id="userDropdown"
           @click="
             userDropdown == true
               ? setDropdown('close', 'user')
               : setDropdown('open', 'user')
           "
-          src="https://cdn.vuetifyjs.com/images/john.jpg"
-          class="w-full h-full rounded-full cursor-pointer"
-          alt=""
-        />
+        >
+          <div
+            style="background: rgb(202, 202, 202); padding-top:0.6rem; padding-bottom: 0.6rem;width:3rem"
+            class="group w-full h-full rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
+          >
+            <span
+              class="group-hover:table-cell text-white font-bold align-middle text-xl"
+            >
+              {{ $store.state.name[0] + $store.state.name[1] }}
+            </span>
+          </div>
+        </div>
+
         <div
           id="userDropdownDiv"
           v-if="userDropdown"
           style="width:19rem;height:30rem"
-          class="rounded-sm pt-1 opacity-0 transition-opacity duration-300 bg-white absolute right-0 mt-1 shadow-header"
+          class="rounded-sm pt-1 opacity-0 mt-1 transition-opacity duration-300 bg-white absolute right-0 mt-1 shadow-header"
         >
           <div class="user-infos flex h-16 items-center p-2">
-            <nuxt-link :to="'/user/' + $store.state.username" class="flex items-center">
-            <img
-              src="https://cdn.vuetifyjs.com/images/john.jpg"
-              class="w-14 h-14 rounded-full cursor-pointer"
-            />
-            <div>
-            <p class="text-2xl font-medium ml-1 truncate" style="max-width:10rem">
-              {{ $store.state.username }}
-            </p>
-            </div>
+            <nuxt-link
+              :to="'/user/' + $store.state.username"
+              class="flex items-center"
+            >
+              <img
+                src="https://cdn.vuetifyjs.com/images/john.jpg"
+                class="w-14 h-14 rounded-full cursor-pointer"
+              />
+              <div>
+                <p
+                  class="text-2xl font-medium ml-1 truncate"
+                  style="max-width:10rem"
+                >
+                  {{ $store.state.username }}
+                </p>
+              </div>
             </nuxt-link>
             <span class="uppercase text-xs ml-2">
               {{ $store.state.work_area }}
@@ -153,22 +193,22 @@
           </div>
 
           <nuxt-link to="/members">
-          <div
-            class="dropel text-lg font-medium cursor-pointer w-full transition-colors duration-300 mx-auto py-2 text-center"
-          >
-            {{
-              $store.state.work_area == undefined
-                ? "Öğretmenlerim"
-                : "Öğrencilerim"
-            }}
-          </div>
+            <div
+              class="dropel text-lg font-medium cursor-pointer w-full transition-colors duration-300 mx-auto py-2 text-center"
+            >
+              {{
+                $store.state.work_area == undefined
+                  ? "Öğretmenlerim"
+                  : "Öğrencilerim"
+              }}
+            </div>
           </nuxt-link>
           <nuxt-link to="/friends">
-          <div
-            class="dropel text-lg font-medium cursor-pointer w-full mx-auto py-2 duration-300 text-center"
-          >
-            Arkadaşlarım
-          </div>
+            <div
+              class="dropel text-lg font-medium cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+            >
+              Arkadaşlarım
+            </div>
           </nuxt-link>
           <div
             class="dropel text-lg font-medium cursor-pointer w-full mx-auto py-2 duration-300 text-center"
@@ -185,19 +225,23 @@
           v-if="addDropdown"
           class="rounded-sm opacity-0 transition-opacity duration-300 w-32 h-32 bg-white absolute right-0 mt-1 mr-4 shadow-header"
         >
-          <div class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center">
+          <div
+            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+          >
             Soru/Cevap
           </div>
-        
-          <div class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center">
+
+          <div
+            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+          >
             Ödev
           </div>
- 
-          <div class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center">
+
+          <div
+            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+          >
             Anket
           </div>
- 
- 
         </div>
       </div>
     </div>
@@ -208,6 +252,7 @@
 export default {
   data() {
     return {
+      show: false,
       userDropdown: false,
       addDropdown: false,
       searchDropdown: false,
@@ -238,30 +283,29 @@ export default {
 
             result.data.forEach(user => {
               if (user.role == "student") {
-                const userBool = this.students.find((bool) => {
+                const userBool = this.students.find(bool => {
                   return bool.username == user.username;
-               });
-                if(userBool == undefined){
-                this.students.push(user);
+                });
+                if (userBool == undefined) {
+                  this.students.push(user);
                 }
-
-              } else if(user.role == "teacher") {
-                const userBool = this.teachers.find((bool) => {
+              } else if (user.role == "teacher") {
+                const userBool = this.teachers.find(bool => {
                   return bool.username == user.username;
-               });
+                });
 
-                if(userBool == undefined){
-                this.teachers.push(user);
+                if (userBool == undefined) {
+                  this.teachers.push(user);
                 }
               }
             });
           });
       }
 
-      console.log("------------------------")
+      console.log("------------------------");
       console.log(this.students.length);
       console.log(this.teachers.length);
-      console.log("------------------------")
+      console.log("------------------------");
     },
     setDropdown(func, who) {
       if (func == "close") {
@@ -272,7 +316,9 @@ export default {
             who == "user" ? "userDropdownDiv" : "addDropdownDiv"
           ).style.opacity = "0";
           setTimeout(() => {
-        who == "user" ? (this.userDropdown = false) : (this.addDropdown = false);
+            who == "user"
+              ? (this.userDropdown = false)
+              : (this.addDropdown = false);
           }, 300);
         }
       } else {
@@ -289,8 +335,12 @@ export default {
     }
   },
   mounted() {
+    console.log(this.$store.state.work_area);
 
-    console.log(this.$store.state.work_area)
+    if (this.$store.state.name != undefined) {
+      this.show = true;
+    }
+
     window.addEventListener("click", e => {
       if (
         e.target == document.getElementById("name") ||
@@ -303,12 +353,20 @@ export default {
         this.searchDropdown = false;
       }
 
-      var iflahsiz = document
-        .getElementById("addDropdown")
+      var iflahsiz = document.getElementById("addDropdown");
 
       if (
         e.target != document.getElementById("userDropdown") &&
-        e.target != iflahsiz
+        e.target != iflahsiz &&
+        e.target !=
+          document
+            .getElementById("userDropdown")
+            .getElementsByTagName("div")[0] &&
+        e.target !=
+          document
+            .getElementById("userDropdown")
+            .getElementsByTagName("div")[0]
+            .getElementsByTagName("span")[0]
       ) {
         this.setDropdown("close", "user");
         this.setDropdown("close", "add");
@@ -319,15 +377,15 @@ export default {
     searchStr() {
       this.searchDropdown = false;
     },
-    addDropdown(){
-      console.log('asdadsadd')
-      if(this.addDropdown == true){
-        this.setDropdown("close", "user")
+    addDropdown() {
+      console.log("asdadsadd");
+      if (this.addDropdown == true) {
+        this.setDropdown("close", "user");
       }
     },
-    userDropdown(){
-      if(this.userDropdown == true){
-        this.setDropdown("close", "add")
+    userDropdown() {
+      if (this.userDropdown == true) {
+        this.setDropdown("close", "add");
       }
     }
   }

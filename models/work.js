@@ -79,7 +79,7 @@ async function createWork({type, username, password, token, title, subtitle, ima
             return new Promise((res, rej) => {
          if(user.err == undefined){
                const shared = new Date()
-               const finishDate = new Date(shared.getFullYear(), shared.getMonth(), shared.getDate() - 3); 
+               const finishDate = new Date(shared.getFullYear(), shared.getMonth(), shared.getDate() + 3); 
                 
                if(work.id == undefined){
                    if((type == "homework" && user.role == "teacher") || type == "survey" || type == "text"){
@@ -192,14 +192,6 @@ function comment({workId, token, commentary}){
                 const user = await userModel.getUser(null,null,"login",token)
 
                 if(user.err == undefined){
-                    var userBool = rows.filter(nowComment => {
-                        var comments = JSON.parse(`[${nowComment.comments}]`)
-                        return user.username = comments.username
-                    })
-                    console.log('-------aaa---------------------------')
-                    console.log(userBool)
-                    console.log('----------------------------------')
-                    if(userBool == undefined){
                     let comment = {username: user.username, name: user.name, comment: commentary}
                     if(user.work_area != undefined){
                         comment.workArea = user.work_area 
@@ -211,10 +203,6 @@ function comment({workId, token, commentary}){
                     db.all(`UPDATE works SET comments = '${newCommends}' WHERE id = '${rows[0].id}'`, function(err, rows){
                         res({ok:true})
                     })
-                 }
-                 else{
-                     res({err: "Zaten yorum yapmışsınız"})
-                 }
                 }
                 else{
                     res(user)

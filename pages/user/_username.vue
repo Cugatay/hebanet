@@ -3,11 +3,18 @@
     <div class="container md:w-3/4 w-full mx-auto">
       <div class="head flex justify-around items-center">
         <div class="user-avatar flex items-center">
-          <img
-            src="https://cdn.vuetifyjs.com/images/john.jpg"
-            style="width:4.5rem; height:4.5rem"
-            class="rounded-full cursor-pointer"
-          />
+          <div>
+            <div
+              style="background: rgb(202, 202, 202); padding-top:1.1rem; padding-bottom: 1.1rem;width:4.4rem"
+              class="group rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
+            >
+              <span
+                class="group-hover:table-cell text-white font-bold align-middle text-2xl"
+              >
+               {{ nameSurname[0] + nameSurname[1] }}
+              </span>
+            </div>
+                </div>
           <div class="block">
             <div class="text-2xl ml-2 cursor-pointer flex items-center"><p class="truncate" style="max-width:14rem">{{nameSurname}}</p> <span class="uppercase text-xs text-gray-700 cursor-auto ml-2">{{ workArea }}</span> </div>
             <p class="text-gray-500 text-lg">@{{ username }}</p>
@@ -98,9 +105,9 @@
 
       <div class="posts md:w-2/3 w-11/12 mx-auto mt-5 pl-6">
         <div v-if="user_tunnelBool">
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
-          <Work class="mt-4" :where="'normal'" :type="'work'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
+          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
+          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
+          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
         </div>
         <div v-else-if="personsBool" class="ml-6 md:ml-0">
           <div v-if="teachers != undefined">

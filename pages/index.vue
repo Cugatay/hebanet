@@ -1,17 +1,19 @@
 <template>
+<div>
+    <WorkUI v-if="$store.state.workUI" class="fixed top-0 left-0 z-50" />
   <div v-if="$store.state.works != undefined" class="mx-auto min-h-full w-full">
     <div v-if="$store.state.works[0] == undefined" class="text-center text-gray-600">Yeni bir ödev, soru veya anket yok</div>
     <div v-if="$store.state.works.length > 3" class="w-full md:mb-12 mb-6 scroll ml-2 md:ml-0" style="overflow:auto">
       <div class="mx-auto Works w-80 mb-2 mt-4 flex">
-        <Work :where="'deadline'" :type="'work'" :done="false" :id="$store.state.works[0].id" :owner="$store.state.works[0].owner" :title="$store.state.works[0].title" :subtitle="$store.state.works[0].subtitle" :makers="$store.state.works[0].makers" :shared="$store.state.works[0].shared" :finish="$store.state.works[0].finish" :image="$store.state.works[0].image" :comments="$store.state.works[0].comments" />
-        <Work :where="'deadline'" :type="'work'" :done="false" :id="$store.state.works[1].id" :owner="$store.state.works[1].owner" :title="$store.state.works[1].title" :subtitle="$store.state.works[1].subtitle" :makers="$store.state.works[1].makers" :shared="$store.state.works[1].shared" :finish="$store.state.works[1].finish" :image="$store.state.works[1].image" :comments="$store.state.works[1].comments" />
-        <Work :where="'deadline'" :type="'work'" :done="false" :id="$store.state.works[2].id" :owner="$store.state.works[2].owner" :title="$store.state.works[2].title" :subtitle="$store.state.works[2].subtitle" :makers="$store.state.works[2].makers" :shared="$store.state.works[2].shared" :finish="$store.state.works[2].finish" :image="$store.state.works[2].image" :comments="$store.state.works[2].comments"  />
+        <Work :where="'deadline'" :done="false" :id="$store.state.works[0].id" :owner="$store.state.works[0].owner" :title="$store.state.works[0].title" :type="$store.state.works[0].type" :subtitle="$store.state.works[0].subtitle" :makers="$store.state.works[0].makers" :shared="$store.state.works[0].shared" :finish="$store.state.works[0].finish" :image="$store.state.works[0].image" :comments="$store.state.works[0].comments" />
+        <Work :where="'deadline'" :done="false" :id="$store.state.works[1].id" :owner="$store.state.works[1].owner" :title="$store.state.works[1].title" :type="$store.state.works[1].type" :subtitle="$store.state.works[1].subtitle" :makers="$store.state.works[1].makers" :shared="$store.state.works[1].shared" :finish="$store.state.works[1].finish" :image="$store.state.works[1].image" :comments="$store.state.works[1].comments" />
+        <Work :where="'deadline'" :done="false" :id="$store.state.works[2].id" :owner="$store.state.works[2].owner" :title="$store.state.works[2].title" :type="$store.state.works[2].type" :subtitle="$store.state.works[2].subtitle" :makers="$store.state.works[2].makers" :shared="$store.state.works[2].shared" :finish="$store.state.works[2].finish" :image="$store.state.works[2].image" :comments="$store.state.works[2].comments"  />
         <p>
         </p>
       </div>
     </div>
     <div class="homeworks justify-center mx-auto w-11/12 md:w-55"> <!-- md:w-8/12 or w-55 -->
-      <work v-for="(work, value) in $store.state.works" v-if="!($store.state.works.length > 3 && value <= 2)" :key="work.id" :where="'normal'" :type="'work'" :done="false" :id="work.id" :owner="work.owner" :title="work.title" :subtitle="work.subtitle" :makers="work.makers" :shared="work.shared" :finish="work.finish" :image="work.image" :comments="work.comments" />
+      <work v-for="(work, value) in $store.state.works" v-if="!($store.state.works.length > 3 && value <= 2)" :key="work.id" :where="'normal'" :done="false" :id="work.id" :owner="work.owner" :title="work.title" :type="work.type" :subtitle="work.subtitle" :makers="work.makers" :shared="work.shared" :finish="work.finish" :image="work.image" :comments="work.comments" />
     </div>
     <p class="my-5">User Functions</p>
     <button class="button--green" @click="getuser">Get user</button>
@@ -51,6 +53,8 @@
     <button class="button--green" @click="getDashboard">Get Dashboard</button>
     <button class="button--green" @click="comment">Comment</button>
     <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-10 w-10 mx-auto"></div>
+  
+
     <div style="height:200vh">
       ASD
 
@@ -70,6 +74,7 @@
       <UserCard v-for="user in suggestUsers" :key="user.username" class="float-left ml-2 mt-3" :username="user.username" :nameSurname="user.name" :workArea="user.work_area" :description="user.description" />
     </div>
   </div>
+  </div>
 </template>
 
 <script>
@@ -78,22 +83,24 @@ import debounce from 'lodash/debounce';
 import Work from "@/components/Work";
 import Header from "@/components/Header";
 import UserCard from '@/components/UserCard'
+import WorkUI from '@/components/WorkUI'
 
 export default {
+  components: {
+    Work,
+    Header,
+    UserCard,
+    WorkUI
+  },
   data(){
     return{
       scroll: null,
       suggestUsers: this.$store.state.suggestUsers
     }
   },
-  components: {
-    Work,
-    Header,
-    UserCard
-  },
   methods: {
     comment(){
-        this.$axios.post("/api/comment", { token: this.$store.state.token, workId: "o2NJHYFmpZ", commentary: "selamlar" })
+        this.$axios.post("/api/comment", { token: this.$store.state.token, workId: "Ar7Dfu6FFI", commentary: "selamlar" })
       .then(result => {
         console.log(result.data)
       })
