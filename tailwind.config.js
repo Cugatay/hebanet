@@ -5,16 +5,13 @@
  ** Default: https://github.com/tailwindcss/tailwindcss/blob/master/stubs/defaultConfig.stub.js
  */
 module.exports = {
-  purge: [
-    './**/*.html',
-    './**/*.vue',
-    './**/*.jsx',
-  ],
+  purge: ["./**/*.html", "./**/*.vue", "./**/*.jsx"],
   theme: {
     extend: {
       spacing: {
         "13": "56px",
         "14": "3.5rem",
+        "17": "4.3rem",
         "36": "9rem",
         "40": "10rem",
         "41": "11rem",

@@ -9,21 +9,34 @@
               class="group rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
             >
               <span
+                v-if="nameSurname != undefined"
                 class="group-hover:table-cell text-white font-bold align-middle text-2xl"
               >
-               {{ nameSurname[0] + nameSurname[1] }}
+                {{ nameSurname[0] + nameSurname[1] }}
               </span>
             </div>
-                </div>
+          </div>
           <div class="block">
-            <div class="text-2xl ml-2 cursor-pointer flex items-center"><p class="truncate" style="max-width:14rem">{{nameSurname}}</p> <span class="uppercase text-xs text-gray-700 cursor-auto ml-2">{{ workArea }}</span> </div>
+            <div class="text-2xl ml-2 cursor-pointer flex items-center">
+              <p class="truncate" style="max-width:14rem">{{ nameSurname }}</p>
+              <span class="uppercase text-xs text-gray-700 cursor-auto ml-2">{{
+                workArea
+              }}</span>
+            </div>
             <p class="text-gray-500 text-lg">@{{ username }}</p>
           </div>
         </div>
-        <FollowBtn :username="username" :isTeacher="workArea == undefined ? false : true" />
+        <FollowBtn
+          :username="username"
+          :isTeacher="workArea == undefined ? false : true"
+        />
       </div>
 
       <div
+        v-if="
+          commonFriendsTeachers[0] != undefined &&
+            $store.state.username != username
+        "
         class="common-friends w-2/3 mx-auto mt-10 rounded-lg h-16 justify-start block"
       >
         <div class="header text-center mb-1 text-2xl">
@@ -32,27 +45,23 @@
         </div>
         <div class="flex md:justify-start justify-center">
           <div style="width:4rem" class="mx-1">
-            <img
-              src="https://cdn.vuetifyjs.com/images/john.jpg"
-              style="width:100%; height:100%;background:red"
-              class="rounded-full cursor-pointer"
-            />
-          </div>
-
-          <div style="width:4rem" class="mx-1">
-            <img
-              src="https://cdn.vuetifyjs.com/images/john.jpg"
-              style="width:100%; height:100%;background:red"
-              class="rounded-full cursor-pointer"
-            />
-          </div>
-
-          <div style="width:4rem" class="mx-1">
-            <img
-              src="https://cdn.vuetifyjs.com/images/john.jpg"
-              style="width:100%; height:100%;background:red"
-              class="rounded-full cursor-pointer"
-            />
+            <!-- ------------------------------------------- -->
+            <div>
+              <div
+                v-for="user in commonFriendsTeachers"
+                :key="user.username"
+                style="background: rgb(202, 202, 202); padding-top:1.2rem; padding-bottom: 1.2rem;width:4.2rem"
+                class="group rounded-full overflow-hidden shadow-inner text-center bg-purple table cursor-pointer"
+              >
+                <span
+                  class="group-hover:table-cell text-white font-bold align-middle text-xl"
+                >
+                  <!-- {{ name[0] + name[1] }} -->
+                  {{ user.username[0] + user.username[1] }}
+                </span>
+              </div>
+            </div>
+            <!-- ------------------------------------------- -->
           </div>
         </div>
       </div>
@@ -105,18 +114,60 @@
 
       <div class="posts md:w-2/3 w-11/12 mx-auto mt-5 pl-6">
         <div v-if="user_tunnelBool">
-          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
-          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
-          <Work class="mt-4" :where="'normal'" :done="true" :id="'iveX2oT8vk'" :owner="'{"username":"hoca","name":"hoca","workArea":"Fizik"}'" :title="'This is fake'" :type="'homework/jpg'" :subtitle="'fasulikkonun faydalarikko'" :makers="{username: 'cagatayxx', answers: ['b']}" :shared="'Wed May 20 2020 01:32:56 GMT+0300 (GMT+03:00)'" :finish="'Sat May 23 2020 00:00:00 GMT+0300 (GMT+03:00)'" :image="'/asd'" :comments="{asd: 'asd'}" />
+          <Work
+            class="mt-4"
+            :where="'normal'"
+            :done="true"
+            v-for="work in works"
+            :key="work.id"
+            :id="work.id"
+            :owner="work.owner"
+            :title="work.title"
+            :type="work.type"
+            :subtitle="work.subtitle"
+            :makers="work.makers"
+            :shared="work.shared"
+            :finish="work.finish"
+            :image="work.image"
+            :comments="work.comments"
+          />
         </div>
         <div v-else-if="personsBool" class="ml-6 md:ml-0">
           <div v-if="teachers != undefined">
-          <UserCard v-for="(teacher, value) in teachers" :key="teacher.username" class="float-left mb-2" :class="value%2 == 0 ? 'mr-2' : ''" :username="teacher.username" :nameSurname="teacher.name" :workArea="teacher.work_area" :description="teacher.description" />
+            <UserCard
+              v-for="(teacher, value) in teachers"
+              :key="teacher.username"
+              class="float-left mb-2"
+              :class="value % 2 == 0 ? 'mr-2' : ''"
+              :username="teacher.username"
+              :nameSurname="teacher.name"
+              :workArea="teacher.work_area"
+              :description="teacher.description"
+            />
           </div>
           <div v-if="friends != undefined">
-          <UserCard v-for="(friend, value) in friends" :key="friend.username" class="float-left mb-2" :class="value%2 == 0 && value == 0  ? '' : value%2 == 0 ? 'mr-2' : ''" :username="friend.username" :nameSurname="friend.name" :workArea="friend.work_area" :description="friend.description" />
+            <UserCard
+              v-for="(friend, value) in friends"
+              :key="friend.username"
+              class="float-left mb-2"
+              :class="
+                value % 2 == 0 && value == 0 ? '' : value % 2 == 0 ? 'mr-2' : ''
+              "
+              :username="friend.username"
+              :nameSurname="friend.name"
+              :workArea="friend.work_area"
+              :description="friend.description"
+            />
           </div>
-          <div v-if="teachers == undefined && friends == undefined" class="text-center w-11/12 text-gray-600" v-text="$store.state.username == username ? 'Daha hiç kimseyi eklemedin. Kullanıcıları aramaya ve eklemeye hemen başlayabilirsin!' : 'Bu kullanıcının arkadaşı ve öğretmeni yok'" />
+          <div
+            v-if="teachers == undefined && friends == undefined"
+            class="text-center w-11/12 text-gray-600"
+            v-text="
+              $store.state.username == username
+                ? 'Daha hiç kimseyi eklemedin. Kullanıcıları aramaya ve eklemeye hemen başlayabilirsin!'
+                : 'Bu kullanıcının arkadaşı ve öğretmeni yok'
+            "
+          />
         </div>
       </div>
     </div>
@@ -144,33 +195,79 @@ export default {
       workArea: null,
       friends: null,
       teachers: null,
-      description: null
+      description: null,
+      commonFriendsTeachers: [],
+      works: []
     };
   },
-  methods: {
-
-  },
+  methods: {},
   asyncData(context, callback) {
-      console.log(context.route.params.username)
+    console.log(context.route.params.username);
     context.$axios
-      .post("/api/getuser", { username: context.route.params.username, password:"", why:"userpage" })
+      .post("/api/getuser", {
+        username: context.route.params.username,
+        password: "",
+        why: "userpage"
+      })
       .then(result => {
-        console.log('object')
-        console.log(result.data.username)
+        console.log(result.data.works);
         callback(null, {
-            nameSurname: result.data.name,
-            username: result.data.username,
-            workArea: result.data.work_area,
-            friends: result.data.friends != undefined && result.data.teachers != "" ? JSON.parse(`[${result.data.friends}]`) : null,
-            teachers: result.data.teachers != undefined && result.data.teachers != "" ? JSON.parse(`[${result.data.teachers}]`) : null,
-            description: result.data.description
+          nameSurname: result.data.name,
+          username: result.data.username,
+          workArea: result.data.work_area,
+          friends:
+            result.data.friends != undefined && result.data.teachers != ""
+              ? JSON.parse(`[${result.data.friends}]`)
+              : null,
+          teachers:
+            result.data.teachers != undefined && result.data.teachers != ""
+              ? JSON.parse(`[${result.data.teachers}]`)
+              : null,
+          description: result.data.description,
+          works: result.data.works
         });
       });
   },
-  mounted(){
-      if(this.username == null){
-          window.location = "/"
-      }
+  mounted() {
+    if (this.username == undefined) {
+      window.location = "/";
+    }
+    setTimeout(() => {
+      console.log(this.commonFriendsTeachers);
+    }, 2000);
+    var thisTeachers = JSON.parse(`[${this.$store.state.teachers}]`);
+    if (
+      this.teachers != undefined &&
+      this.teachers != "" &&
+      thisTeachers != undefined &&
+      thisTeachers != "" &&
+      this.teachers[0] != undefined &&
+      thisTeachers[0] != undefined
+    ) {
+      var commonTeachers = this.teachers.filter(teacher => {
+        return thisTeachers.find(thisTeacher => {
+          return thisTeacher.username == teacher.username;
+        });
+      });
+      this.commonFriendsTeachers.push(...commonTeachers);
+    }
+
+    var thisFriends = JSON.parse(`[${this.$store.state.friends}]`);
+    if (
+      this.friends != undefined &&
+      this.friends != "" &&
+      thisFriends != undefined &&
+      thisFriends != "" &&
+      this.friends[0] != undefined &&
+      thisFriends[0] != undefined
+    ) {
+      var commonFriends = this.friends.filter(friend => {
+        return thisFriends.find(thisFriend => {
+          return thisFriend.username == friend.username;
+        });
+      });
+      this.commonFriendsTeachers.push(...commonFriends);
+    }
   }
 };
 </script>

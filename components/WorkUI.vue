@@ -65,7 +65,7 @@
 
           <div class="comments mt-14">
             <p
-              class="text-center text-gray-600 mt-2"
+              class="text-center text-gray-600 pt-2"
               v-if="
                 (comments == undefined || comments == '') &&
                   (newComments == undefined || newComments == '')
@@ -76,7 +76,6 @@
             <div v-else>
               <Comment
                 v-for="comment in comments"
-                :key="comment.username + comment.comment"
                 :comment="comment.comment"
                 :name="comment.name"
                 :username="comment.username"
@@ -84,7 +83,6 @@
 
               <Comment
                 v-for="comment in newComments"
-                :key="comment.username + comment.comment"
                 :comment="comment.comment"
                 :name="comment.name"
                 :username="comment.username"
@@ -96,11 +94,12 @@
         <div class="doComment mx-auto" style="height:7.5%; width: 97%">
           <div class="send__group field flex">
             <input
+              style="width: 92%"
               autocomplete="off"
               @keypress.enter="sendComment"
               v-model="sendStr"
               type="input"
-              class="send__field -mr-6 select-none"
+              class="send__field mr-2 select-none"
               placeholder="send"
               name="send"
               id="send"
@@ -157,6 +156,13 @@ export default {
         comment: this.sendStr,
         name: this.$store.state.name,
         username: this.$store.state.username,
+        workArea: this.$store.state.work_area
+      });
+      this.$store.commit("addComment", {
+        id: this.$store.state.workUIDetails.id,
+        comment: this.sendStr,
+        username: this.$store.state.username,
+        name: this.$store.state.name,
         workArea: this.$store.state.work_area
       });
       this.$axios

@@ -10,12 +10,14 @@ const createStore = () => {
       work_area: null,
       friends: null,
       teachers: null,
-      // storage: "http://heba-storage.herokuapp.com",
-      storage: "http://localhost:4000",
+      storage: "http://heba-storage.herokuapp.com",
+      // storage: "http://localhost:4000",
       works: null,
+      notequals: [],
       suggestUsers: null,
       workUI: false,
-      workUIDetails: {}
+      workUIDetails: {},
+      finish: false
     },
     mutations: {
       setToken(state, token) {
@@ -49,11 +51,17 @@ const createStore = () => {
         }
       },
 
-      addWorks(state, works) {
+      addWorks(state, data) {
         if (state.works != undefined) {
-          state.works = [...state.works, ...works];
+          state.works = [...state.works, ...data.rows];
+          data.rows.forEach(work => {
+            state.notequals.push(work.id);
+          });
+          if (data.finish) {
+            state.finish = true;
+          }
         } else {
-          state.works = works;
+          state.works = data;
         }
       },
 
@@ -64,6 +72,24 @@ const createStore = () => {
 
       closeWorkUI(state) {
         state.workUI = false;
+      },
+
+      addComment(state, commentInfo) {
+        console.log(commentInfo);
+        const id = commentInfo.id;
+        if (id != undefined && commentInfo.comment != undefined) {
+          state.works.forEach((work, value) => {
+            if (work.id == id) {
+              state.works[value].comments =
+                state.works[value].comments == "" ||
+                state.works[value].comments == undefined
+                  ? JSON.stringify(commentInfo)
+                  : `${state.works[value].comments}, ${JSON.stringify(
+                      commentInfo
+                    )}`;
+            }
+          });
+        }
       }
     },
     actions: {
@@ -76,27 +102,43 @@ const createStore = () => {
             token = token.split("=")[1];
 
             // console.log(vuexContext.state.works)
-            if (vuexContext.state.works == undefined) {
+            if (
+              vuexContext.state.works == undefined &&
+              vuexContext.state.suggestUsers == undefined
+            ) {
               await context.$axios
                 .post("/api/getdashboard", { token })
                 .then(result => {
                   console.log(
                     "autttttttttthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
                   );
-
+                  console.log(result.data.rows);
                   if (result.data.notFound == true) {
                     console.log("Çuruğ");
                     vuexContext.state.suggestUsers = result.data.users;
                   } else {
+                    result.data.rows.sort(function(a, b) {
+                      var Afinish = new Date(a.finish);
+                      var Bfinish = new Date(b.finish);
+
+                      if (Afinish > Bfinish) {
+                        return 1;
+                      }
+                      if (Bfinish > Afinish) {
+                        return -1;
+                      }
+                      return 0;
+                    });
                     vuexContext.state.works = result.data.rows;
+
+                    result.data.rows.forEach(work => {
+                      vuexContext.state.notequals.push(work.id);
+                    });
                   }
-                  console.log("--------------+++++++++++++------------------");
-                  console.log(result.data);
-                  console.log("--------------+++++++++++++------------------");
+                  if (result.data.finish == true) {
+                    vuexContext.state.finish = true;
+                  }
                 });
-              console.log("-------------------------------------");
-              console.log(vuexContext.state.works);
-              console.log("-------------------------------------");
             }
             vuexContext.state.token = token;
           }

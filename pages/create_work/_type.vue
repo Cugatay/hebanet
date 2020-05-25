@@ -1,17 +1,17 @@
 <template>
   <div v-if="sign">
     <form
-      class="fileupload md:flex w-10/12 md:w-8/12 mx-auto"
+      class="fileupload md:flex w-10/12 md:w-10/12 lg:w-6/12 mx-auto"
       :action="
-        `${$store.state.storage}/upload?token=${$store.state.token}&type=${$route.params.type}`
+        `${$store.state.storage}/upload?token=${$store.state.token}&type=${$route.params.type}&answers=${answers}`
       "
       method="post"
       enctype="multipart/form-data"
     >
       <div class="files md:-ml-8">
-        <div class="workImage">
-          <label for="workImage" class="custom-file-upload md:ml-0 ml-20">
-            Work Image
+        <div class="workImage md:ml-0">
+          <label for="workImage" class="workImageLabel">
+            <img src="/icons/plus-circle.svg" class="w-12 h-12 mx-auto mt-24" />
           </label>
           <input
             ref="workImage"
@@ -27,8 +27,10 @@
               v-if="workImageName == undefined || workImageName == ''"
               class="info"
             >
-              <h3 class="text-2xl text-center">Resim Yükle</h3>
-              <h3 class="text-xl text-center">(İsteğe Bağlı)</h3>
+              <h3 class="text-2xl ml-16">Resim Yükle</h3>
+              <h3 class="text-xl ml-17">
+                (İsteğe Bağlı)
+              </h3>
             </div>
             <div
               v-if="workImageName != undefined"
@@ -39,17 +41,12 @@
             </div>
           </div>
         </div>
-
-        <!-- <div class="workFile">
-            <label for="workFile" class="custom-file-upload">
-              Work File
-          </label>
-            <input type="file" id="workFile" name="workFile" placeholder="Ödev Dosyası"  value="" />
-          </div> -->
       </div>
       <div class="inputs w-full md:ml-8">
         <label for="title"></label>
         <input
+          v-model="title"
+          @keypress.enter="sendWork"
           autocomplete="off"
           name="title"
           type="text"
@@ -57,25 +54,105 @@
           class="block border-b-2 border-solid border-gray-600 w-full text-xl mt-6"
           style="outline:none"
         />
+        <div v-if="$route.params.type == 'text'" class="text">
+          <label for="subtitle"></label>
+          <input
+            v-model="subtitle"
+            @keypress.enter="sendWork"
+            autocomplete="off"
+            name="subtitle"
+            type="text"
+            placeholder="Açıklama"
+            class="block border-b-2 border-solid border-gray-600 w-full text-xl mt-6"
+            style="outline:none"
+          />
+        </div>
 
-        <label for="subtitle"></label>
-        <input
-          autocomplete="off"
-          name="subtitle"
-          type="text"
-          placeholder="Açıklama"
-          class="block border-b-2 border-solid border-gray-600 w-full text-xl mt-6"
-          style="outline:none"
-        />
+        <div
+          v-else-if="$route.params.type == 'homework'"
+          class="mt-1 w-8/12 float-left"
+        >
+          <div class="workFile">
+            <label for="workFile" class="workfileLabel cursor-pointer">
+              <img src="/icons/scroll.svg" class="w-10 h-10 float-left" />
+              <p
+                class="text-lg pt-1 pl-8"
+                v-text="workFileName == undefined ? 'Dosya Seç' : workFileName"
+              />
+            </label>
+            <p class="text-gray-700">(.docx, .pdf, .jpg, .jpeg, .png)</p>
+            <input
+              @change="workFileChanged"
+              type="file"
+              id="workFile"
+              name="workFile"
+              placeholder="Ödev Dosyası"
+              value=""
+            />
+          </div>
+          <div style="width: 158%" class="answers mt-5">
+            <h1 class="text-center text-xl">
+              Cevap Anahtarı
+            </h1>
+            <div v-for="(option, value) in answers" class="answer mt-2">
+              <span class="text-gray-700">1.</span>
+              <input
+                @keypress.enter="a"
+                v-model="answers[value]"
+                :id="'answer' + value"
+                type="text"
+                style="outline: none;"
+                class="w-11/12 border-solid border-b-2 border-gray-500"
+              />
+            </div>
+            <img
+              src="/icons/plus.svg"
+              class="w-6 h-6 mx-auto mt-2 cursor-pointer"
+              @click="answers.push('')"
+            />
+          </div>
+        </div>
+
+        <div
+          v-else-if="$route.params.type == 'survey'"
+          class="w-8/12 float-left"
+        >
+          <ul class="mt-8 w-full" style="list-style:circle">
+            <li v-for="(option, value) in answers">
+              <input
+                v-model="answers[value]"
+                autocomplete="off"
+                name="title"
+                type="text"
+                :placeholder="'Seçenek' + (value + 1)"
+                class="block w-full text-lg mt-3"
+                style="outline:none;border-bottom: 1.5px solid #718096"
+              />
+            </li>
+
+            <img
+              src="/icons/plus.svg"
+              class="w-8 h-8 mx-auto mt-2 cursor-pointer"
+              @click="answers.push('')"
+            />
+          </ul>
+        </div>
 
         <button
+          @click="sendWork"
           :type="
-            workImageName == undefined || workImageName == ''
-              ? 'button'
-              : 'submit'
+            (workImageName != undefined && workImageName != '') ||
+            $route.params.type == 'homework'
+              ? 'submit'
+              : 'button'
           "
           style="outline: none"
           class="mt-3 mr-2 float-right cursor-pointer justify-center flex button bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-md h-10 mr-1 w-16"
+          :class="
+            $route.params.type == 'survey' || $route.params.type == 'homework'
+              ? 'float-right mt-5'
+              : ''
+          "
         >
           <img src="/icons/paper-plane2.svg" class="w-8 h-8 -ml-1" alt="" />
         </button>
@@ -88,9 +165,13 @@
 export default {
   data() {
     return {
+      title: null,
+      subtitle: null,
       sign: null,
       workImageName: null,
-      workImageSize: null
+      workImageSize: null,
+      workFileName: null,
+      answers: this.$route.params.type == "survey" ? ["", ""] : [""]
     };
   },
   methods: {
@@ -105,6 +186,48 @@ export default {
         }
       } else {
         this.workImageName = null;
+      }
+    },
+    a(e) {
+      e.preventDefault();
+      this.answers.push("");
+      setTimeout(() => {
+        document.getElementById("answer" + (this.answers.length - 1)).focus();
+      }, 10);
+    },
+    workFileChanged(e) {
+      if (e.target.files != undefined) {
+        if (e.target.files[0] != undefined) {
+          this.workFileName = e.target.files[0].name;
+        } else {
+          this.workFileName = null;
+        }
+      } else {
+        this.workFileName = null;
+      }
+    },
+    sendWork() {
+      if (
+        this.$route.params.type != "homework" &&
+        (this.workImageName == undefined || this.workImageName == "")
+      ) {
+        this.$axios
+          .post("/api/creatework", {
+            type: this.$route.params.type,
+            token: this.$store.state.token,
+            title: this.title,
+            subtitle: this.subtitle,
+            answers: this.answers
+          })
+          .then(result => {
+            console.log(result.data);
+            if (result.data.err == undefined) {
+              this.title = null;
+              this.subtitle = null;
+              this.answers =
+                this.$route.params.type == "survey" ? ["", ""] : [""];
+            }
+          });
       }
     }
   },
@@ -137,7 +260,7 @@ input[type="file"] {
   display: none;
 }
 
-.custom-file-upload {
+.workImageLabel {
   border: 1.5px solid #ccc;
   display: inline-block;
   padding: 6px 12px;

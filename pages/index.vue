@@ -83,6 +83,7 @@
         />
       </div>
       <div
+        v-if="!$store.state.finish"
         class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-10 w-10 mx-auto"
       ></div>
     </div>
@@ -107,6 +108,9 @@
           :description="user.description"
         />
       </div>
+    </div>
+    <div>
+      <button @click="doWork">asd</button>
     </div>
   </div>
 </template>
@@ -165,9 +169,8 @@ export default {
     doWork() {
       this.$axios
         .post("/api/dowork", {
-          username: "cagatayxx",
-          password: "123456",
-          workId: "iveX2oT8vk",
+          token: this.$store.state.token,
+          workId: "VL7iGDnf6q",
           answers: ["b"]
         })
         .then(result => {
@@ -240,11 +243,23 @@ export default {
       );
       var maxScroll = documentHeight - window.innerHeight;
 
-      console.log(window.scrollY);
-      console.log(maxScroll);
+      if (maxScroll == window.scrollY) {
+        if (!this.$store.state.finish) {
+          this.$axios
+            .post("/api/getdashboard", {
+              token: this.$store.state.token,
+              notequals: this.$store.state.notequals
+            })
+            .then(result => {
+              console.log(result.data);
+              this.$store.commit("addWorks", result.data);
+            });
+        }
+      }
     }
   },
   mounted() {
+    console.log(this.$store.state.notequals);
     this.suggestUsers = this.$store.state.suggestUsers;
     this.handleDebouncedScroll = debounce(this.handleScroll, 100);
     window.addEventListener("scroll", this.handleDebouncedScroll);

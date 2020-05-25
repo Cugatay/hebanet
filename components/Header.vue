@@ -23,6 +23,7 @@
               :to="'/user/' + result.username"
             >
               <div
+                @click="searchStr = null"
                 class="w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
                 style="padding-top:0.5rem;padding-bottom:0.5rem"
               >
@@ -57,6 +58,7 @@
               :to="'/user/' + result.username"
             >
               <div
+                @click="searchStr = null"
                 class="searchRes w-full h-12 items-center flex px-1 mt-1 cursor-pointer transition-colors duration-300 hover:bg-gray-200"
                 style="padding-top:0.5rem;padding-bottom:0.5rem"
               >
@@ -225,23 +227,29 @@
           v-if="addDropdown"
           class="rounded-sm opacity-0 transition-opacity duration-300 w-32 h-32 bg-white absolute right-0 mt-1 mr-4 shadow-header"
         >
-          <div
-            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
-          >
-            Soru/Cevap
-          </div>
+          <nuxt-link to="/create_work/text">
+            <div
+              class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+            >
+              Soru/Cevap
+            </div>
+          </nuxt-link>
 
-          <div
-            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
-          >
-            Ödev
-          </div>
+          <nuxt-link to="/create_work/homework">
+            <div
+              class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+            >
+              Ödev
+            </div>
+          </nuxt-link>
 
-          <div
-            class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
-          >
-            Anket
-          </div>
+          <nuxt-link to="/create_work/survey">
+            <div
+              class="dropel text-lg cursor-pointer w-full mx-auto py-2 duration-300 text-center"
+            >
+              Anket
+            </div>
+          </nuxt-link>
         </div>
       </div>
     </div>

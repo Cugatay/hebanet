@@ -70,10 +70,9 @@ async function createWork({
   subtitle,
   image,
   fileType,
-  finish
+  finish,
+  answers
 }) {
-  //  const fileExtension =  fileData.name.endsWith(".jpg") ? "jpg" : fileData.name.endsWith("jpeg") ? "jpeg" : fileData.name.endsWith("png") ? "png" : null;
-  console.log("was here");
   let fileExtension = "";
 
   if (type == "homework") {
@@ -108,7 +107,7 @@ async function createWork({
         const finishDate = new Date(
           shared.getFullYear(),
           shared.getMonth(),
-          shared.getDate() + 3
+          shared.getDate() + 1
         );
 
         if (work.id == undefined) {
@@ -117,10 +116,12 @@ async function createWork({
             type == "survey" ||
             type == "text"
           ) {
-            db.all(
+            console.log(
               `INSERT INTO works(id, type, owner, title, ${
                 type == "text" ? "subtitle, " : ""
-              } shared, finish, image) VALUES ('${id}', ${
+              } shared, finish, image ${
+                type == "homework" || type == "survey" ? ", answers" : ""
+              }) VALUES ('${id}', ${
                 type == "homework" ? `'homework/${fileExtension}'` : `'${type}'`
               }, '${JSON.stringify({
                 username: user.username,
@@ -134,7 +135,36 @@ async function createWork({
                     ? `default_${user.work_area}`
                     : `default_${type}`
                   : image
-              }')`,
+              }' ${
+                type == "homework" || type == "survey"
+                  ? `, '${JSON.stringify(answers)}'`
+                  : ""
+              })`
+            );
+            db.all(
+              `INSERT INTO works(id, type, owner, title, ${
+                type == "text" ? "subtitle, " : ""
+              } shared, finish, image ${
+                type == "homework" || type == "survey" ? ",answers" : ""
+              }) VALUES ('${id}', ${
+                type == "homework" ? `'homework/${fileExtension}'` : `'${type}'`
+              }, '${JSON.stringify({
+                username: user.username,
+                name: user.name,
+                workArea: user.work_area
+              })}', '${title}', ${
+                type == "text" ? `'${subtitle}', ` : ""
+              }'${shared}', '${finishDate}', '${
+                image == false || image == null
+                  ? type == "homework"
+                    ? `default_${user.work_area}`
+                    : `default_${type}`
+                  : image
+              }' ${
+                type == "homework" || type == "survey"
+                  ? `, '${JSON.stringify(answers)}'`
+                  : ""
+              })`,
               function(err, rows) {
                 if (err) console.log(err);
 
@@ -175,35 +205,18 @@ async function doWork({ workId, username, password, token, answers }) {
     db.all(`SELECT * FROM works WHERE id = '${workId}'`, function(err, rows) {
       if (err) console.log(err);
       let work = rows[0];
-      if (work != undefined) {
-        if (user.err == undefined) {
-          if (user.role != "teacher") {
-            var workMakers = work.makers;
+      console.log(answers);
+      if (answers != undefined || answers != "" || answers[0] != undefined) {
+        if (work != undefined) {
+          if (user.err == undefined) {
+            if (user.role != "teacher") {
+              var workMakers = work.makers;
 
-            if (workMakers == undefined || workMakers == "") {
-              workMakers = `{"username": "${
-                user.username
-              }", "answers": ${JSON.stringify(answers)}}`;
+              if (workMakers == undefined || workMakers == "") {
+                workMakers = `{"username": "${
+                  user.username
+                }", "answers": ${JSON.stringify(answers)}}`;
 
-              let data = [workMakers, work.id];
-              let sql = `UPDATE works SET makers = ? WHERE id = ?`;
-
-              db.run(sql, data, function(err) {
-                if (err) {
-                  return console.error(err.message);
-                }
-                res({ username: user.username, success: true });
-              });
-            } else {
-              console.log(`[${workMakers}]`);
-              var workMakersBool = JSON.parse(`[${workMakers}]`).find(
-                worker => {
-                  return worker.username == user.username;
-                }
-              );
-
-              if (!workMakersBool) {
-                workMakers += `,{username: "${user.username}", answers: ${answers}}`;
                 let data = [workMakers, work.id];
                 let sql = `UPDATE works SET makers = ? WHERE id = ?`;
 
@@ -214,17 +227,39 @@ async function doWork({ workId, username, password, token, answers }) {
                   res({ username: user.username, success: true });
                 });
               } else {
-                res({ err: "Bu ödevi zaten yapmışsınız" });
+                console.log(`[${workMakers}]`);
+                var workMakersBool = JSON.parse(`[${workMakers}]`).find(
+                  worker => {
+                    return worker.username == user.username;
+                  }
+                );
+
+                if (!workMakersBool) {
+                  workMakers += `,{username: "${user.username}", answers: ${answers}}`;
+                  let data = [workMakers, work.id];
+                  let sql = `UPDATE works SET makers = ? WHERE id = ?`;
+
+                  db.run(sql, data, function(err) {
+                    if (err) {
+                      return console.error(err.message);
+                    }
+                    res({ username: user.username, success: true });
+                  });
+                } else {
+                  res({ err: "Bu ödevi zaten yapmışsınız" });
+                }
               }
+            } else {
+              res({ err: "Öğretmenler ödev yapamaz" });
             }
           } else {
-            res({ err: "Öğretmenler ödev yapamaz" });
+            res(user.err);
           }
         } else {
-          res(user.err);
+          res({ err: "Böyle bir çaşışma bulunamadı" });
         }
       } else {
-        res({ err: "Böyle bir çaşışma bulunamadı" });
+        res({ err: "En az bir soruyu cevaplamalısınız" });
       }
     });
   });
@@ -322,7 +357,9 @@ function getDashboard({ username, password, token, notequals }) {
         }
 
         db.all(
-          `SELECT id,type,owner,title,subtitle,makers,shared,finish,image,comments FROM works WHERE (${userFriendsSQL} ${userTeachersSQL}) ${
+          `SELECT ${
+            /*'id,type,owner,title,subtitle,makers,shared,finish,image,comments'*/ "*"
+          } FROM works WHERE (${userFriendsSQL} ${userTeachersSQL}) ${
             notequals != undefined && notequals != "" ? `AND ${notequals}` : ""
           } ORDER BY ${
             notequals != undefined && notequals != ""
@@ -358,6 +395,23 @@ function getDashboard({ username, password, token, notequals }) {
                   }
                 }
               } else {
+                // var workMakers = JSON.parse(`[${work.makers}]`);
+
+                // var workMakersBool = [];
+                // console.log("-------------------");
+                // console.log(workMakers);
+                // console.log("-------------------");
+                // if (workMakers != undefined && workMakers[0] != undefined) {
+                //   workMakersBool = workMakers.filter(maker => {
+                //     return maker.username == user.username;
+                //   });
+                // }
+                if (
+                  !(work.type == "survey") /*&& workMakersBool[0] == undefined*/
+                ) {
+                  work.answers = null;
+                }
+                // TODO: Yapan kişiler görüntülenecek
                 work.makers =
                   work.makers == undefined
                     ? 0
@@ -377,7 +431,9 @@ function getDashboard({ username, password, token, notequals }) {
             } else {
               if (deleteSQL.findsql != "") {
                 db.all(
-                  `SELECT id,type,owner,title,subtitle,makers,shared,finish,image,comments FROM works WHERE (${userFriendsSQL} ${userTeachersSQL}) ${
+                  `SELECT ${
+                    /*'id,type,owner,title,subtitle,makers,shared,finish,image,comments'*/ "*"
+                  } FROM works WHERE (${userFriendsSQL} ${userTeachersSQL}) ${
                     notequals != undefined && notequals != ""
                       ? `AND ${notequals}`
                       : ""
@@ -391,7 +447,39 @@ function getDashboard({ username, password, token, notequals }) {
                       : "shared ASC"
                   } LIMIT ${9 - sendingWorks.length}`,
                   function(err, rows2) {
+                    console.log("------------&&&&-------------------------");
+                    console.log([...sendingWorks, ...rows2]);
+                    console.log("------------&&&&-------------------------");
                     if (err) console.log(err);
+                    rows2.forEach(work => {
+                      // var workMakers = JSON.parse(`[${work.makers}]`);
+                      // var workMakersBool = [];
+                      // console.log(workMakers);
+                      // if (
+                      //   workMakers != undefined &&
+                      //   workMakers[0] != undefined
+                      // ) {
+                      //   workMakersBool = workMakers.filter(maker => {
+                      //     return maker.username == user.username;
+                      //   });
+                      // }
+                      if (
+                        !(
+                          work.type == "survey"
+                        ) /*&& workMakersBool[0] == undefined*/
+                      ) {
+                        work.answers = null;
+                      }
+                      // TODO: Yapan kişiler görüntülenebilecek
+                      work.makers =
+                        work.makers == undefined
+                          ? 0
+                          : JSON.parse(`[${work.makers}]`).length;
+                      work.image = work.image.startsWith("default_")
+                        ? `/images/${work.image}`
+                        : `${storageKeys.url}/download/${work.id}_image.${work.image}`;
+                      selectedSQL = `AND id != '${work.id}'`;
+                    });
 
                     if ([...sendingWorks, ...rows2].length >= 9) {
                       res({ rows: [...sendingWorks, ...rows2] });
@@ -472,8 +560,6 @@ function deleteWork({ workId, username, password, token }) {
     });
   });
 }
-
-// function autoClean(){}
 
 module.exports = {
   getWork,
