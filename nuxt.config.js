@@ -16,12 +16,8 @@ export default {
         content: process.env.npm_package_description || ""
       }
     ],
-    link: [
-      { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-    ],
-    script: [
-      { src: "https://mozilla.github.io/pdf.js/build/pdf.js" }
-    ]
+    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+    script: [{ src: "https://mozilla.github.io/pdf.js/build/pdf.js" }]
   },
   /*
    ** Customize the progress-bar color
@@ -54,7 +50,8 @@ export default {
    ** See https://axios.nuxtjs.org/options
    */
   axios: {
-    baseURL: "http://hebanet.herokuapp.com"
+    baseURL: "https://hebanet.herokuapp.com"
+    // baseURL: "http://localhost:3000"
   },
   /*
    ** Build configuration
