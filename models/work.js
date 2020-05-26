@@ -107,7 +107,7 @@ async function createWork({
         const finishDate = new Date(
           shared.getFullYear(),
           shared.getMonth(),
-          shared.getDate() + 1
+          shared.getDate() - 5
         );
 
         if (work.id == undefined) {
@@ -330,16 +330,8 @@ function getDashboard({ username, password, token, notequals }) {
           userFriendsJSON.forEach(user => {
             userFriendsSQL +=
               userFriendsSQL == ""
-                ? `owner='${JSON.stringify({
-                    username: user.username,
-                    name: user.name,
-                    workArea: user.work_area
-                  })}'`
-                : ` OR owner = '${JSON.stringify({
-                    username: user.username,
-                    name: user.name,
-                    workArea: user.work_area
-                  })}'`;
+                ? `owner LIKE '%"username":"${user.username}"%'`
+                : ` OR owner LIKE '%"username":"${user.username}"%'`;
           });
         }
 
@@ -348,11 +340,7 @@ function getDashboard({ username, password, token, notequals }) {
           userTeachersJSON.forEach(user => {
             userTeachersSQL += ` ${
               userFriendsSQL != "" || userTeachersSQL != "" ? "OR" : ""
-            } owner = '${JSON.stringify({
-              username: user.username,
-              name: user.name,
-              workArea: user.work_area
-            })}'`;
+            } owner LIKE '%"username":"${user.username}"%'`;
           });
         }
 
@@ -395,31 +383,49 @@ function getDashboard({ username, password, token, notequals }) {
                   }
                 }
               } else {
-                // var workMakers = JSON.parse(`[${work.makers}]`);
+                var workMakers = JSON.parse(`[${work.makers}]`);
 
-                // var workMakersBool = [];
-                // console.log("-------------------");
-                // console.log(workMakers);
-                // console.log("-------------------");
-                // if (workMakers != undefined && workMakers[0] != undefined) {
-                //   workMakersBool = workMakers.filter(maker => {
-                //     return maker.username == user.username;
-                //   });
-                // }
+                var workMakersBool = [];
+                var newMakers = "";
+                console.log("-------------------");
+                console.log(workMakers);
+                console.log("-------------------");
+                if (workMakers != undefined && workMakers[0] != undefined) {
+                  workMakersBool = workMakers.filter((maker, value) => {
+                    var workerUsername = maker.username;
+                    workMakers[value].username = null;
+                    newMakers +=
+                      newMakers == ""
+                        ? JSON.stringify(workMakers[value])
+                        : ", " + JSON.stringify(workMakers[value]);
+                    return workerUsername == user.username;
+                  });
+                  console.log(
+                    "newMakers - - - - - - - - - - - - - - - --  -- -  - - - - - --  -"
+                  );
+                  console.log(newMakers);
+                  console.log(
+                    "newMakers - - - - - - - - - - - - - - - --  -- -  - - - - - --  -"
+                  );
+                  work.makers = newMakers;
+                }
                 if (
-                  !(work.type == "survey") /*&& workMakersBool[0] == undefined*/
+                  !(work.type == "survey") &&
+                  workMakersBool[0] == undefined
                 ) {
                   work.answers = null;
                 }
-                // TODO: Yapan kişiler görüntülenecek
-                work.makers =
-                  work.makers == undefined
-                    ? 0
-                    : JSON.parse(`[${work.makers}]`).length;
-                work.image = work.image.startsWith("default_")
-                  ? `/images/${work.image}`
-                  : `${storageKeys.url}/download/${work.id}_image.${work.image}`;
-                selectedSQL = `AND id != '${work.id}'`;
+                // TODO: Ödevi yapan kişiler görüntülenecek
+                if (workMakersBool[0] == undefined || work.type != "survey") {
+                  work.makers =
+                    work.makers == undefined
+                      ? 0
+                      : JSON.parse(`[${work.makers}]`).length;
+                  work.image = work.image.startsWith("default_")
+                    ? `/images/${work.image}`
+                    : `${storageKeys.url}/download/${work.id}_image.${work.image}`;
+                  selectedSQL += `AND id != '${work.id}'`;
+                }
               }
               return finish > now;
             });
@@ -452,33 +458,55 @@ function getDashboard({ username, password, token, notequals }) {
                     console.log("------------&&&&-------------------------");
                     if (err) console.log(err);
                     rows2.forEach(work => {
-                      // var workMakers = JSON.parse(`[${work.makers}]`);
-                      // var workMakersBool = [];
-                      // console.log(workMakers);
-                      // if (
-                      //   workMakers != undefined &&
-                      //   workMakers[0] != undefined
-                      // ) {
-                      //   workMakersBool = workMakers.filter(maker => {
-                      //     return maker.username == user.username;
-                      //   });
-                      // }
+                      var workMakers = JSON.parse(`[${work.makers}]`);
+
+                      var workMakersBool = [];
+                      var newMakers = "";
+                      console.log("-------------------");
+                      console.log(workMakers);
+                      console.log("-------------------");
                       if (
-                        !(
-                          work.type == "survey"
-                        ) /*&& workMakersBool[0] == undefined*/
+                        workMakers != undefined &&
+                        workMakers[0] != undefined
+                      ) {
+                        workMakersBool = workMakers.filter((maker, value) => {
+                          var workerUsername = maker.username;
+                          workMakers[value].username = null;
+                          newMakers +=
+                            newMakers == ""
+                              ? JSON.stringify(workMakers[value])
+                              : ", " + JSON.stringify(workMakers[value]);
+                          return workerUsername == user.username;
+                        });
+                        console.log(
+                          "newMakers - - - - - - - - - - - - - - - --  -- -  - - - - - --  -"
+                        );
+                        console.log(newMakers);
+                        console.log(
+                          "newMakers - - - - - - - - - - - - - - - --  -- -  - - - - - --  -"
+                        );
+                        work.makers = newMakers;
+                      }
+                      if (
+                        !(work.type == "survey") &&
+                        workMakersBool[0] == undefined
                       ) {
                         work.answers = null;
                       }
+                      if (
+                        workMakersBool[0] == undefined ||
+                        work.type != "survey"
+                      ) {
+                        work.makers =
+                          work.makers == undefined
+                            ? 0
+                            : JSON.parse(`[${work.makers}]`).length;
+                        work.image = work.image.startsWith("default_")
+                          ? `/images/${work.image}`
+                          : `${storageKeys.url}/download/${work.id}_image.${work.image}`;
+                        selectedSQL = `AND id != '${work.id}'`;
+                      }
                       // TODO: Yapan kişiler görüntülenebilecek
-                      work.makers =
-                        work.makers == undefined
-                          ? 0
-                          : JSON.parse(`[${work.makers}]`).length;
-                      work.image = work.image.startsWith("default_")
-                        ? `/images/${work.image}`
-                        : `${storageKeys.url}/download/${work.id}_image.${work.image}`;
-                      selectedSQL = `AND id != '${work.id}'`;
                     });
 
                     if ([...sendingWorks, ...rows2].length >= 9) {

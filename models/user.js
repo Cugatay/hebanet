@@ -16,6 +16,8 @@ async function getUser(username, password, why, token) {
     });
   }
   return new Promise(async (res, rej) => {
+    var deleteSQL = "";
+    var sendingWorks = [];
     db.all(
       why == "login"
         ? `SELECT * FROM users WHERE username = '${username}'`
@@ -33,13 +35,27 @@ async function getUser(username, password, why, token) {
               `SELECT id,type,owner,title,subtitle,makers,shared,finish,image,comments FROM works WHERE owner LIKE '%"username":"${username}"%'`,
               function(err, rows2) {
                 rows2.forEach(work => {
-                  work.makers =
-                    work.makers == undefined
-                      ? 0
-                      : JSON.parse(`[${work.makers}]`).length;
+                  var now = new Date();
+                  var finish = new Date(work.finish);
+                  if (finish <= now) {
+                    deleteSQL +=
+                      deleteSQL == ""
+                        ? `id = '${work.id}'`
+                        : ` OR id = '${work.id}'`;
+                  } else {
+                    work.makers =
+                      work.makers == undefined
+                        ? 0
+                        : JSON.parse(`[${work.makers}]`).length;
+                    sendingWorks.push(work);
+                  }
                 });
                 if (err) console.log(err);
-                res({ ...rows[0], works: rows2 });
+                res({ ...rows[0], works: sendingWorks });
+
+                if (deleteSQL != "") {
+                  db.all(`DELETE FROM works WHERE ${deleteSQL}`);
+                }
               }
             );
           } else res({ err: "Kullanıcı adı hatalı" });

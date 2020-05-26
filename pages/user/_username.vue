@@ -115,10 +115,9 @@
       <div class="posts md:w-2/3 w-11/12 mx-auto mt-5 pl-6">
         <div v-if="user_tunnelBool">
           <Work
+            v-for="work in works"
             class="mt-4"
             :where="'normal'"
-            :done="true"
-            v-for="work in works"
             :key="work.id"
             :id="work.id"
             :owner="work.owner"

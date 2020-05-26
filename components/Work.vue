@@ -22,17 +22,35 @@
       </p>
       <p class="text-sm text-gray-700">
         {{ JSON.parse(owner).name }}
-        <span class="uppercase text-xs ml-2">{{
+        <span class="uppercase text-xs ml-1">{{
           JSON.parse(owner).workArea
         }}</span>
       </p>
+
+      <div v-if="type == 'survey'" class="w-full mt-2">
+        <div
+          v-for="answer in answers"
+          @click="been"
+          :id="answer"
+          class="option mx-auto border-solid border-2 border-gray-600 mb-2 rounded text-center text-gray-700 text-lg transition-colors duration-300"
+          :class="
+            !done
+              ? 'hover:text-white hover:bg-blue-600 hover:border-blue-600'
+              : ''
+          "
+          style="height:1.8rem;outline: none"
+        >
+          {{ answer }}
+        </div>
+        <div class="-mt-5 text-lg text-center">...</div>
+      </div>
 
       <div
         v-if="type.startsWith('homework')"
         class="flex w-32 pl-8 mt-1 mx-auto"
         style="color:#6e6e6e"
       >
-        <div class="flex" v-if="!done">
+        <div class="flex">
           <div class="flex mr-2">
             <div class="text-center">
               <img src="/icons/edit.svg" clas style="width:1.8rem" />
@@ -52,15 +70,9 @@
             </div>
           </div>
         </div>
-        <img
-          v-else
-          src="/icons/check.svg"
-          style="width:2.2rem"
-          class="mt-2 ml-6"
-        />
       </div>
       <div
-        v-if="!done && type.startsWith('homework')"
+        v-if="type.startsWith('homework')"
         class="text-gray-500 w-32"
         :class="where == 'deadline' ? '-mt-2 -ml-1' : 'mt-2'"
       >
@@ -88,7 +100,6 @@ export default {
   props: {
     where: String,
     type: String,
-    done: Boolean,
     id: String,
     title: String,
     owner: String,
@@ -97,22 +108,53 @@ export default {
     shared: String,
     finish: String,
     image: String,
-    comments: String
+    comments: String,
+    answers: Array
+  },
+  data() {
+    return {
+      dont_open: false,
+      done: false
+    };
   },
   methods: {
+    been(e) {
+      console.log(this.answers);
+      if (!this.done) {
+        this.dont_open = true;
+        this.$axios
+          .post("/api/dowork", {
+            token: this.$store.state.token,
+            workId: this.id,
+            answers: e.target.id
+          })
+          .then(result => {
+            console.log(result.data);
+            e.target.className += " bg-blue-600 border-blue-600 text-white";
+            e.target.style +=
+              " ;border: 2px solid #3182ce; background:#3182ce; color:white";
+            console.log(e.target.className);
+            // this.$refs.answers;
+            this.done = true;
+            this.dont_open = false;
+          });
+      }
+    },
     zoomWork() {
-      this.$store.commit("setWorkUI", {
-        id: this.id,
-        type: this.type,
-        owner: this.owner,
-        title: this.title,
-        subtitle: this.subtitle,
-        makers: this.makers,
-        shared: this.shared,
-        finish: this.shared,
-        image: this.image,
-        comments: this.comments
-      });
+      if (!this.dont_open) {
+        this.$store.commit("setWorkUI", {
+          id: this.id,
+          type: this.type,
+          owner: this.owner,
+          title: this.title,
+          subtitle: this.subtitle,
+          makers: this.makers,
+          shared: this.shared,
+          finish: this.shared,
+          image: this.image,
+          comments: this.comments
+        });
+      }
     }
   },
   created() {

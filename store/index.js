@@ -117,23 +117,29 @@ const createStore = () => {
                     console.log("Çuruğ");
                     vuexContext.state.suggestUsers = result.data.users;
                   } else {
-                    result.data.rows.sort(function(a, b) {
-                      var Afinish = new Date(a.finish);
-                      var Bfinish = new Date(b.finish);
+                    // console.log(object)
+                    if (
+                      result.data.rows != undefined &&
+                      result.data.rows[0] != undefined
+                    ) {
+                      result.data.rows.sort(function(a, b) {
+                        var Afinish = new Date(a.finish);
+                        var Bfinish = new Date(b.finish);
 
-                      if (Afinish > Bfinish) {
-                        return 1;
-                      }
-                      if (Bfinish > Afinish) {
-                        return -1;
-                      }
-                      return 0;
-                    });
-                    vuexContext.state.works = result.data.rows;
+                        if (Afinish > Bfinish) {
+                          return 1;
+                        }
+                        if (Bfinish > Afinish) {
+                          return -1;
+                        }
+                        return 0;
+                      });
+                      vuexContext.state.works = result.data.rows;
 
-                    result.data.rows.forEach(work => {
-                      vuexContext.state.notequals.push(work.id);
-                    });
+                      result.data.rows.forEach(work => {
+                        vuexContext.state.notequals.push(work.id);
+                      });
+                    }
                   }
                   if (result.data.finish == true) {
                     vuexContext.state.finish = true;

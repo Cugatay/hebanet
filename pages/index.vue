@@ -19,7 +19,6 @@
         <div class="mx-auto Works w-80 mb-2 mt-4 flex">
           <Work
             :where="'deadline'"
-            :done="false"
             :id="$store.state.works[0].id"
             :owner="$store.state.works[0].owner"
             :title="$store.state.works[0].title"
@@ -30,10 +29,10 @@
             :finish="$store.state.works[0].finish"
             :image="$store.state.works[0].image"
             :comments="$store.state.works[0].comments"
+            :answers="JSON.parse($store.state.works[0].answers)"
           />
           <Work
             :where="'deadline'"
-            :done="false"
             :id="$store.state.works[1].id"
             :owner="$store.state.works[1].owner"
             :title="$store.state.works[1].title"
@@ -44,10 +43,10 @@
             :finish="$store.state.works[1].finish"
             :image="$store.state.works[1].image"
             :comments="$store.state.works[1].comments"
+            :answers="JSON.parse($store.state.works[0].answers)"
           />
           <Work
             :where="'deadline'"
-            :done="false"
             :id="$store.state.works[2].id"
             :owner="$store.state.works[2].owner"
             :title="$store.state.works[2].title"
@@ -58,6 +57,7 @@
             :finish="$store.state.works[2].finish"
             :image="$store.state.works[2].image"
             :comments="$store.state.works[2].comments"
+            :answers="JSON.parse($store.state.works[0].answers)"
           />
           <p></p>
         </div>
@@ -69,7 +69,6 @@
           v-if="!($store.state.works.length > 3 && value <= 2)"
           :key="work.id"
           :where="'normal'"
-          :done="false"
           :id="work.id"
           :owner="work.owner"
           :title="work.title"
@@ -80,6 +79,7 @@
           :finish="work.finish"
           :image="work.image"
           :comments="work.comments"
+          :answers="JSON.parse(work.answers)"
         />
       </div>
       <div
@@ -87,7 +87,7 @@
         class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-10 w-10 mx-auto"
       ></div>
     </div>
-    <div v-else>
+    <div v-else-if="$store.state.suggestUsers != undefined">
       <div class="text-center text-gray-600">
         Hiç arkadaşın veya öğretmenin yok
       </div>
@@ -109,9 +109,12 @@
         />
       </div>
     </div>
-    <div>
-      <button @click="doWork">asd</button>
+    <div v-else class="text-center text-gray-600">
+      Yeni bir ödev, soru veya anket yok
     </div>
+    <!-- <div>
+      <button @click="doWork">asd</button>
+    </div> -->
   </div>
 </template>
 
@@ -170,7 +173,7 @@ export default {
       this.$axios
         .post("/api/dowork", {
           token: this.$store.state.token,
-          workId: "VL7iGDnf6q",
+          workId: "",
           answers: ["b"]
         })
         .then(result => {
