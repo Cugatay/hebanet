@@ -56,7 +56,6 @@
                 <span
                   class="group-hover:table-cell text-white font-bold align-middle text-xl"
                 >
-                  <!-- {{ name[0] + name[1] }} -->
                   {{ user.username[0] + user.username[1] }}
                 </span>
               </div>

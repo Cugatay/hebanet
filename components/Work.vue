@@ -20,29 +20,59 @@
         {{ subtitle }}
         <!-- Bunu yapamadım hocam yardım lütfen -->
       </p>
-      <p class="text-sm text-gray-700">
+      <p class="-mt-1 text-sm text-gray-700">
         {{ JSON.parse(owner).name }}
         <span class="uppercase text-xs ml-1">{{
           JSON.parse(owner).workArea
         }}</span>
       </p>
 
-      <div v-if="type == 'survey'" class="w-full mt-2">
+      <div
+        v-if="type == 'survey'"
+        class="mt-2"
+        :class="where == 'deadline' ? 'w-11/12 mx-auto' : 'w-full'"
+      >
         <div
-          v-for="answer in answers"
+          v-for="(answer, value) in answers"
+          v-if="value < 2 /*&& !(where == 'deadline' && value >= 1)*/"
           @click="been"
-          :id="answer"
-          class="option mx-auto border-solid border-2 border-gray-600 mb-2 rounded text-center text-gray-700 text-lg transition-colors duration-300"
-          :class="
-            !done
-              ? 'hover:text-white hover:bg-blue-600 hover:border-blue-600'
-              : ''
-          "
-          style="height:1.8rem;outline: none"
+          :id="id + answer"
+          class="truncate option mx-auto border-solid border-2 border-gray-600 mb-2 rounded text-center text-gray-700 text-lg transition-colors duration-300"
+          :class="where == 'deadline' ? '-mt-1' : ''"
+          @mouseenter="entered"
+          @mouseout="leaved"
+          style="height:1.8rem;outline: none;"
         >
-          {{ answer }}
+          {{ answer.slice(0, 19) }}{{ answer[19] != undefined ? "..." : "" }}
+          {{
+            makers[0] != undefined
+              ? "(" +
+                JSON.parse(`[${makers}]`).filter(maker => {
+                  return maker.answers == answer;
+                }).length +
+                ")"
+              : theMakers[0] != undefined
+              ? `(${
+                  theMakers.filter(maker => {
+                    return maker.answers == answer;
+                  }).length
+                })`
+              : ""
+          }}
         </div>
-        <div class="-mt-5 text-lg text-center">...</div>
+
+        <div
+          v-if="
+            answers != undefined &&
+              answers[2] !=
+                undefined /*||
+              (where == 'deadline' && answers[1] != undefined)*/
+          "
+          class="text-lg text-center"
+          :class="where == 'deadline' ? '-mt-3' : '-mt-5'"
+        >
+          ...
+        </div>
       </div>
 
       <div
@@ -114,10 +144,25 @@ export default {
   data() {
     return {
       dont_open: false,
-      done: false
+      done: false,
+      theMakers: []
     };
   },
   methods: {
+    entered(e) {
+      if (!this.done) {
+        e.target.style.color = "white";
+        e.target.style.border = "2px solid #3182ce";
+        e.target.style.background = "#3182ce";
+      }
+    },
+    leaved(e) {
+      if (!this.done) {
+        e.target.style.color = "#4a5568";
+        e.target.style.border = "2px solid #718096";
+        e.target.style.background = "none";
+      }
+    },
     been(e) {
       console.log(this.answers);
       if (!this.done) {
@@ -126,17 +171,17 @@ export default {
           .post("/api/dowork", {
             token: this.$store.state.token,
             workId: this.id,
-            answers: e.target.id
+            answers: e.target.id.split(this.id)[1]
           })
           .then(result => {
             console.log(result.data);
-            e.target.className += " bg-blue-600 border-blue-600 text-white";
             e.target.style +=
               " ;border: 2px solid #3182ce; background:#3182ce; color:white";
             console.log(e.target.className);
             // this.$refs.answers;
             this.done = true;
             this.dont_open = false;
+            this.theMakers = result.data.makers;
           });
       }
     },
@@ -157,8 +202,22 @@ export default {
       }
     }
   },
-  created() {
-    console.log(this.owner);
+  mounted() {
+    console.log(this.makers);
+    if (this.makers.toString().startsWith(`{"username":`)) {
+      console.log("Yapılmışko");
+      const makersJSON = JSON.parse(`[${this.makers}]`);
+      if (makersJSON[0] != undefined) {
+        const selected = JSON.parse(`[${this.makers}]`).filter(maker => {
+          return maker.username != null;
+        });
+        console.log(selected[0].answers);
+        console.log(document.getElementById(selected[0].answers));
+        document.getElementById(this.id + selected[0].answers).style +=
+          " ;border: 2px solid #3182ce; background:#3182ce; color:white";
+      }
+      this.done = true;
+    }
   }
 };
 </script>

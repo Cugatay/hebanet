@@ -13,14 +13,18 @@
             {{ $store.state.workUIDetails.title }}
           </p>
           <button
+            v-if="$store.state.workUIDetails.type.startsWith('homework')"
             class="button select-none bg-blue-500 hover:bg-blue-600 transition-colors duration-300 text-white font-bold py-1 px-2 rounded-full"
             style="min-width:8.5rem; outline: none"
           >
             Yapmaya Başla
           </button>
         </div>
-        <p class="text-lg">
-          {{ $store.state.workUIDetails.title }}
+        <p
+          v-if="$store.state.workUIDetails.subtitle != undefined"
+          class="text-lg"
+        >
+          {{ $store.state.workUIDetails.subtitle }}
         </p>
       </div>
       <div class="w-2/6 border-solid border-l-2 border-gray-200 block">
@@ -180,7 +184,7 @@ export default {
   },
   mounted() {
     console.log("-------------------------");
-    console.log(this.$store.state.workUIDetails.comments);
+    console.log(this.$store.state.workUIDetails);
     console.log(
       document.getElementById(this.$store.state.workUIDetails.id)
       // .getElementsByClassName("comments")
@@ -199,9 +203,9 @@ export default {
 }
 
 .workUI {
-  width: 70vw;
-  height: 75vh;
-  margin-left: 15vw;
+  width: 70%;
+  height: 75%;
+  margin-left: 15%;
   margin-top: 10vh;
   border-radius: 4px;
 }

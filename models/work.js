@@ -107,7 +107,7 @@ async function createWork({
         const finishDate = new Date(
           shared.getFullYear(),
           shared.getMonth(),
-          shared.getDate() - 5
+          shared.getDate() + 5
         );
 
         if (work.id == undefined) {
@@ -209,8 +209,21 @@ async function doWork({ workId, username, password, token, answers }) {
       if (answers != undefined || answers != "" || answers[0] != undefined) {
         if (work != undefined) {
           if (user.err == undefined) {
-            if (user.role != "teacher") {
+            if (!(user.role == "teacher" && type == "homework")) {
               var workMakers = work.makers;
+              var sendingMakers = [];
+
+              JSON.parse(`[${workMakers}]`).forEach(maker => {
+                maker.username = null;
+                sendingMakers.push(maker);
+              });
+              sendingMakers.push({
+                username: user.username,
+                work_area: user.work_area,
+                answers: answers
+              });
+              console.log("parsed");
+              console.log(sendingMakers);
 
               if (workMakers == undefined || workMakers == "") {
                 workMakers = `{"username": "${
@@ -224,7 +237,12 @@ async function doWork({ workId, username, password, token, answers }) {
                   if (err) {
                     return console.error(err.message);
                   }
-                  res({ username: user.username, success: true });
+
+                  res({
+                    username: user.username,
+                    success: true,
+                    makers: sendingMakers
+                  });
                 });
               } else {
                 console.log(`[${workMakers}]`);
@@ -235,7 +253,7 @@ async function doWork({ workId, username, password, token, answers }) {
                 );
 
                 if (!workMakersBool) {
-                  workMakers += `,{username: "${user.username}", answers: ${answers}}`;
+                  workMakers += `,{"username": "${user.username}", "answers": "${answers}"}`;
                   let data = [workMakers, work.id];
                   let sql = `UPDATE works SET makers = ? WHERE id = ?`;
 
@@ -243,7 +261,11 @@ async function doWork({ workId, username, password, token, answers }) {
                     if (err) {
                       return console.error(err.message);
                     }
-                    res({ username: user.username, success: true });
+                    res({
+                      username: user.username,
+                      success: true,
+                      makers: sendingMakers
+                    });
                   });
                 } else {
                   res({ err: "Bu ödevi zaten yapmışsınız" });
@@ -393,7 +415,9 @@ function getDashboard({ username, password, token, notequals }) {
                 if (workMakers != undefined && workMakers[0] != undefined) {
                   workMakersBool = workMakers.filter((maker, value) => {
                     var workerUsername = maker.username;
-                    workMakers[value].username = null;
+                    if (workerUsername != user.username) {
+                      workMakers[value].username = null;
+                    }
                     newMakers +=
                       newMakers == ""
                         ? JSON.stringify(workMakers[value])

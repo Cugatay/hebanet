@@ -95,7 +95,7 @@
               Cevap Anahtarı
             </h1>
             <div v-for="(option, value) in answers" class="answer mt-2">
-              <span class="text-gray-700">1.</span>
+              <span class="text-gray-700">{{ value + 1 }}.</span>
               <input
                 @keypress.enter="a"
                 v-model="answers[value]"
@@ -147,7 +147,7 @@
               : 'button'
           "
           style="outline: none"
-          class="mt-3 mr-2 float-right cursor-pointer justify-center flex button bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-md h-10 mr-1 w-16"
+          class="mt-3 mr-2 float-right cursor-pointer justify-center flex button bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-md h-10 mr-1 w-16 pt-1"
           :class="
             $route.params.type == 'survey' || $route.params.type == 'homework'
               ? 'float-right mt-5'
