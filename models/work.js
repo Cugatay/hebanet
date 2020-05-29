@@ -214,8 +214,11 @@ async function doWork({ workId, username, password, token, answers }) {
               var sendingMakers = [];
 
               JSON.parse(`[${workMakers}]`).forEach(maker => {
-                maker.username = null;
-                sendingMakers.push(maker);
+                console.log(maker);
+                if (maker != undefined) {
+                  maker.username = null;
+                  sendingMakers.push(maker);
+                }
               });
               sendingMakers.push({
                 username: user.username,

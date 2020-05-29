@@ -5,10 +5,16 @@
     class="w-full h-full"
   >
     <div @click="closeUI" class="workUiBG w-full h-full" />
-
-    <div class="workUI bg-white absolute top-0 mx-auto flex">
+    <!-- --------------------------------------------------------------------------------------------------- -->
+    <div class="workUI bg-white overflow-hidden absolute top-0 mx-auto flex">
       <div class=" w-4/6 block p-6 pt-4">
         <div class="header flex items-center">
+          <img
+            v-if="type != 'text'"
+            :src="$store.state.workUIDetails.image"
+            class="w-20 h-20 mr-2 rounded"
+            alt=""
+          />
           <p class="text-3xl w-10/12">
             {{ $store.state.workUIDetails.title }}
           </p>
@@ -26,6 +32,106 @@
         >
           {{ $store.state.workUIDetails.subtitle }}
         </p>
+        <img
+          v-if="$store.state.workUIDetails.type == 'text'"
+          class="w-full mt-1"
+          style="height:88%"
+          :src="$store.state.workUIDetails.image"
+        />
+        <div
+          v-if="$store.state.workUIDetails.type == 'survey'"
+          class="w-full mt-3 overflow-auto"
+          style="height:87%"
+        >
+          <div
+            v-for="(answer, value) in $store.state.workUIDetails.answers"
+            v-if="value < 2 /*&& !(where == 'deadline' && value >= 1)*/"
+            @click="been"
+            :id="$store.state.workUIDetails.id + answer"
+            class="truncate cursor-pointer option mx-auto border-solid border-2 border-gray-600 mb-2 rounded text-center text-gray-700 text-lg transition-colors duration-300"
+            @mouseenter="entered"
+            @mouseout="leaved"
+            style="height:2rem;outline: none;"
+          >
+            {{ answer.slice(0, 19) }}{{ answer[19] != undefined ? "..." : "" }}
+            {{
+              $store.state.workUIDetails.makers[0] != undefined
+                ? "(" +
+                  JSON.parse(`[${$store.state.workUIDetails.makers}]`).filter(
+                    maker => {
+                      return maker.answers == answer;
+                    }
+                  ).length +
+                  ")"
+                : theMakers != undefined && theMakers[0] != undefined
+                ? `(${
+                    theMakers.filter(maker => {
+                      return maker.answers == answer;
+                    }).length
+                  })`
+                : ""
+            }}
+          </div>
+        </div>
+        <div
+          class="h-full overflow-auto"
+          v-if="$store.state.workUIDetails.type.startsWith('homework')"
+        >
+          <div
+            v-if="
+              $store.state.workUIDetails.type.split('/')[1] == 'jpeg' ||
+                $store.state.workUIDetails.type.split('/')[1] == 'jpg' ||
+                $store.state.workUIDetails.type.split('/')[1] == 'png'
+            "
+          >
+            <img
+              class="mx-auto"
+              :src="
+                $store.state.storage +
+                  `/download/${$store.state.workUIDetails.id}.jpeg`
+              "
+              alt=""
+            />
+          </div>
+
+          <div
+            v-else-if="$store.state.workUIDetails.type.endsWith('pdf')"
+            id="pdfdiv"
+            style=""
+            class="h-full mt-6"
+          >
+            <div v-if="!error" class="top-bar flex items-center justify-around">
+              <div class="button">
+                <button style="outline:none" class="btn" id="prev-page">
+                  <img
+                    src="/icons/chevron-left.svg"
+                    class="w-8 h-8 border-solid border-2 px-1 py-1 border-gray-500 rounded-full hover:bg-gray-500 transition-colors duration-300"
+                    alt=""
+                  />
+                </button>
+                <button style="outline:none" class="btn" id="next-page">
+                  <img
+                    src="/icons/chevron-right.svg"
+                    class="w-8 h-8 border-solid border-2 px-1 py-1 border-gray-500 rounded-full hover:bg-gray-500 transition-colors duration-300"
+                    alt=""
+                  />
+                </button>
+              </div>
+              <div class=" text-gray-600 text-lg">Önizleme</div>
+              <span class="page-info">
+                Sayfa <span id="page-num"></span>/<span id="page-count"></span>
+              </span>
+            </div>
+
+            <div v-if="error"></div>
+
+            <canvas class="w-full" id="pdf-render"></canvas>
+          </div>
+
+          <div v-else-if="$store.state.workUIDetails.type.endsWith('docx')">
+            <div v-html="innerdocx"></div>
+          </div>
+        </div>
       </div>
       <div class="w-2/6 border-solid border-l-2 border-gray-200 block">
         <div
@@ -138,13 +244,15 @@ export default {
   },
   data() {
     return {
+      innerdocx: "",
       sendStr: null,
       comments:
         this.$store.state.workUIDetails.comments == null ||
         this.$store.state.workUIDetails.comments == ""
           ? null
           : JSON.parse(`[${this.$store.state.workUIDetails.comments}]`),
-      newComments: []
+      newComments: [],
+      theMakers: []
     };
   },
   methods: {
@@ -153,6 +261,41 @@ export default {
       setTimeout(() => {
         this.$store.commit("closeWorkUI");
       }, 350);
+    },
+    entered(e) {
+      if (!this.done) {
+        e.target.style.color = "white";
+        e.target.style.border = "2px solid #3182ce";
+        e.target.style.background = "#3182ce";
+      }
+    },
+    leaved(e) {
+      if (!this.done) {
+        e.target.style.color = "#4a5568";
+        e.target.style.border = "2px solid #718096";
+        e.target.style.background = "none";
+      }
+    },
+    been(e) {
+      if (!this.done) {
+        this.dont_open = true;
+        this.$axios
+          .post("/api/dowork", {
+            token: this.$store.state.token,
+            workId: this.$store.state.workUIDetails.id,
+            answers: e.target.id.split(this.$store.state.workUIDetails.id)[1]
+          })
+          .then(result => {
+            console.log(result.data);
+            e.target.style +=
+              " ;border: 2px solid #3182ce; background:#3182ce; color:white";
+            console.log(e.target.className);
+            // this.$refs.answers;
+            this.done = true;
+            this.dont_open = false;
+            this.theMakers = result.data.makers;
+          });
+      }
     },
 
     sendComment() {
@@ -180,9 +323,118 @@ export default {
         });
 
       this.sendStr = "";
+    },
+    readHTML() {
+      this.$axios
+        .get(
+          `${this.$store.state.storage}/download/${this.$store.state.workUIDetails.id}.html`
+        )
+        .then(res => {
+          this.innerdocx = res.data;
+        });
+    },
+    createPDF() {
+      console.log("ollllllll");
+      //  const url = `../${this.$route.params.workId}.pdf`;
+      const url = `${this.$store.state.storage}/download/${this.$store.state.workUIDetails.id}.pdf`;
+      console.log(url);
+
+      let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null;
+
+      const scale = 1.5,
+        canvas = document.querySelector("#pdf-render"),
+        ctx = canvas.getContext("2d");
+
+      // Render the page
+      const renderPage = num => {
+        pageIsRendering = true;
+
+        // Get page
+        pdfDoc.getPage(num).then(page => {
+          // Set scale
+          const viewport = page.getViewport({ scale });
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderCtx = {
+            canvasContext: ctx,
+            viewport
+          };
+
+          page.render(renderCtx).promise.then(() => {
+            pageIsRendering = false;
+
+            if (pageNumIsPending !== null) {
+              renderPage(pageNumIsPending);
+              pageNumIsPending = null;
+            }
+          });
+
+          // Output current page
+          document.querySelector("#page-num").textContent = num;
+        });
+      };
+
+      // Check for pages rendering
+      const queueRenderPage = num => {
+        if (pageIsRendering) {
+          pageNumIsPending = num;
+        } else {
+          renderPage(num);
+        }
+      };
+
+      // Show Prev Page
+      const showPrevPage = () => {
+        if (pageNum <= 1) {
+          return;
+        }
+        pageNum--;
+        queueRenderPage(pageNum);
+      };
+
+      // Show Next Page
+      const showNextPage = () => {
+        if (pageNum >= pdfDoc.numPages) {
+          return;
+        }
+        pageNum++;
+        queueRenderPage(pageNum);
+      };
+
+      // Get Document
+      pdfjsLib
+        .getDocument(url)
+        .promise.then(pdfDoc_ => {
+          pdfDoc = pdfDoc_;
+
+          document.querySelector("#page-count").textContent = pdfDoc.numPages;
+
+          renderPage(pageNum);
+        })
+        .catch(err => {
+          this.error = true;
+        });
+
+      // Button Events
+      document
+        .querySelector("#prev-page")
+        .addEventListener("click", showPrevPage);
+      document
+        .querySelector("#next-page")
+        .addEventListener("click", showNextPage);
     }
   },
   mounted() {
+    if (this.$store.state.workUIDetails.type == "homework/pdf") {
+      console.log("PDF MAN");
+      this.createPDF();
+    } else if (this.$store.state.workUIDetails.type == "homework/docx") {
+      this.readHTML();
+    }
     console.log("-------------------------");
     console.log(this.$store.state.workUIDetails);
     console.log(
@@ -193,6 +445,30 @@ export default {
     setTimeout(() => {
       this.$refs.workUI.style.opacity = "1";
     }, 10);
+    if (
+      this.$store.state.workUIDetails.makers
+        .toString()
+        .startsWith(`{"username":`)
+    ) {
+      console.log("Yapılmışko");
+      const makersJSON = JSON.parse(
+        `[${this.$store.state.workUIDetails.makers}]`
+      );
+      if (makersJSON[0] != undefined) {
+        const selected = JSON.parse(
+          `[${this.$store.state.workUIDetails.makers}]`
+        ).filter(maker => {
+          return maker.username != null;
+        });
+        console.log(selected[0].answers);
+        console.log(document.getElementById(selected[0].answers));
+        document.getElementById(
+          this.$store.state.workUIDetails.id + selected[0].answers
+        ).style +=
+          " ;border: 2px solid #3182ce; background:#3182ce; color:white";
+      }
+      this.done = true;
+    }
   }
 };
 </script>

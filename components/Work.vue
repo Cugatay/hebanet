@@ -197,7 +197,8 @@ export default {
           shared: this.shared,
           finish: this.shared,
           image: this.image,
-          comments: this.comments
+          comments: this.comments,
+          answers: this.answers
         });
       }
     }

@@ -122,7 +122,7 @@
               <input
                 v-model="answers[value]"
                 autocomplete="off"
-                name="title"
+                name="answers"
                 type="text"
                 :placeholder="'Seçenek' + (value + 1)"
                 class="block w-full text-lg mt-3"
